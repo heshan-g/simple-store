@@ -1,16 +1,21 @@
-const express = require('express');
 require('dotenv').config();
-
+const express = require('express');
 const db = require('./config/db');
+const v1Routes = require('./routes/v1');
 
 const app = express();
-
-// Promisify the Express app's listen method
 app.listen = require('util').promisify(app.listen);
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// API routes
 app.get('/', async (req, res) => {
   res.status(200).send('Listening to requests...');
 });
+
+app.use('/v1', v1Routes);
 
 const port = process.env.PORT || 4000;
 
