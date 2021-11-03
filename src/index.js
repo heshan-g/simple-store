@@ -1,10 +1,11 @@
 require('dotenv').config();
 const express = require('express');
-const db = require('./config/db');
 const v1Routes = require('./routes/v1');
+const { connect: connectToDB } = require('./config/mongoDB');
+
+const port = process.env.PORT || 4000;
 
 const app = express();
-app.listen = require('util').promisify(app.listen);
 
 // Middleware
 app.use(express.json());
@@ -17,18 +18,12 @@ app.get('/', async (req, res) => {
 
 app.use('/v1', v1Routes);
 
-const port = process.env.PORT || 4000;
-
-(async () => {
-  try {
-    // Listen to incoming requests
-    await app.listen(port);
-    console.log(`✅ Server: listening on port ${port}`);
-
-    // Connect to database
-    await db.connect();
-    console.log('✅ DB connection successful');
-  } catch (err) {
-    console.log('❌ Server:', err);
-  }
-})();
+// Start server and connect to the DB
+app
+  .listen(port, () => {
+    console.log(`✔️  The server is listening on port ${port}`);
+    connectToDB();
+  })
+  .on('error', (err) => {
+    console.log('❌ Server failed to start.', err);
+  });
